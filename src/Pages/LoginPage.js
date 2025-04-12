@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { colors } from '../Constants/Colors';
-import axios from 'axios';
+import ApiService from '../Services/ApiService';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSignInAlt } from 'react-icons/fa';
 
 const LoginPage = () => {
@@ -49,35 +49,26 @@ const LoginPage = () => {
         e.preventDefault();
 
         try {
-            // Login request
-            const response = await axios.post('https://localhost:7253/api/Account/login', {
-                email: formData.email,
-                password: formData.password,
-            });
-
-            const { token } = response.data;
+            const { token } = await ApiService.login(formData.email, formData.password);
 
             // Save the token to localStorage
             localStorage.setItem('jwtToken', token);
+            localStorage.setItem('userEmail', formData.email);
 
             alert("Login successful!");
 
             // Fetch role request using email
-            const roleResponse = await axios.get(`https://localhost:7253/api/Account/role`, {
-                params: { email: formData.email },
-            });
-
-            const { role } = roleResponse.data;
+            const { role } = await ApiService.getUserRole(formData.email);
             localStorage.setItem('userRole', role);
             alert(`Role: ${role}`);
 
             // Navigate based on the role
             if (role === 'Doctor') {
-                window.location.href = '/';
+                window.location.href = 'doctorDashboard';
             } else if (role === 'Patient') {
-                window.location.href = '/';
+                window.location.href = 'patientDashboard';
             } else if (role === 'admin') {
-                navigate('/admin-dashboard');
+                window.location.href = '/admin';
             } else {
                 alert('Unknown role. Please contact support.');
             }
