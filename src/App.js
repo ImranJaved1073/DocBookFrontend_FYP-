@@ -2,7 +2,11 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
+import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 import Sidebar from "./Components/Sidebar";
+import ChangePassword from "./Pages/ChangePassword";
+import ForgotPassword from "./Pages/ForgotPassword";
+
 
 // Doctor Pages
 import CreatePrescription from "./Pages/Doctor/CreatePrescription";
@@ -11,6 +15,7 @@ import MyProfile from "./Pages/Doctor/MyProfile";
 import Patients from "./Pages/Doctor/Patients";
 import DoctorAppointments from "./Pages/Doctor/Appointments";
 import DoctorDashboard from "./Pages/Doctor/Dashboard";
+import UpcomingAppointments from './Pages/Doctor/UpcomingAppointments';
 
 // Patient Pages
 import PatientAppointments from "./Pages/Patient/Appointments";
@@ -38,8 +43,10 @@ const AppWrapper = () => {
   const location = useLocation();
   const userType = localStorage.getItem("userRole")?.toLowerCase();
 
-  const publicPaths = ["/", "/about", "/help", "/contact"];
-  const isPublicPage = publicPaths.includes(location.pathname);
+  const publicPaths = ["/", "/about", "/help", "/contact "];
+  const passwordPaths = ["/forgot-password", "/change-password"];
+  const isPasswordPage = passwordPaths.includes(location.pathname);
+  const isPublicPage = publicPaths.includes(location.pathname) && !isPasswordPage;
 
   return (
     <div className="App min-h-screen flex flex-col">
@@ -48,9 +55,9 @@ const AppWrapper = () => {
 
       <div className="flex flex-1">
         {/* Show Sidebar only on private pages */}
-        {userType && !isPublicPage && <Sidebar userType={userType} />}
+        {userType && !isPublicPage && !isPasswordPage && <Sidebar userType={userType} />}
 
-        <div className={`content flex-1  ${userType && !isPublicPage ? "lg:ml-64" : ""}`}>
+        <div className={`content flex-1  ${userType && !isPublicPage && !isPasswordPage ? "lg:ml-64" : ""}`}>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Home />} />
@@ -59,6 +66,9 @@ const AppWrapper = () => {
             <Route path="/contact" element={<Contact />} />
             
             <Route path={`/${userType}Dashboard`} element={userType === "doctor" ? <DoctorDashboard /> : userType === "patient" ? <PatientDashboard /> : <AccessDenied />} />
+
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/change-password" element={<ChangePassword />} />
             
             {!userType && (
               <>
@@ -76,6 +86,7 @@ const AppWrapper = () => {
                 <Route path="/doctor/patients" element={<Patients />} />
                 <Route path="/doctor/my_profile" element={<MyProfile />} />
                 <Route path="/doctor/my_appointments" element={<DoctorAppointments />} />
+                <Route path="/doctor/upcoming" element={<UpcomingAppointments />} />
               </>
             )}
 
@@ -95,6 +106,7 @@ const AppWrapper = () => {
                 <Route path="/patient/my_appointments" element={<PatientAppointments />} />
                 <Route path="/patient/my_appointments/AppointmentCancelled" element={<AppointmentCancelled />} />
                 <Route path="/signup" element={<AccessDenied />} />
+                <Route path="/doctor/upcoming" element={<UpcomingAppointments />} />
               </>
             )}
 
@@ -114,6 +126,8 @@ const AppWrapper = () => {
 function App() {
   return (
     <Router>
+      <ToastContainer
+      />
       <AppWrapper />
     </Router>
   );

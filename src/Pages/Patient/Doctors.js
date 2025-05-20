@@ -7,6 +7,7 @@ import {
 import { motion } from "framer-motion";
 import { NavLink } from 'react-router-dom';
 import ApiService from '../../Services/ApiService';
+import { formatTimeTo12Hour } from '../../Utils/TimeFormatter';
 
 const Doctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -35,14 +36,7 @@ const Doctors = () => {
 
         const mappedDoctors = await Promise.all(
           data.map(async (d) => {
-            let userDetails = { firstName: "Unknown", lastName: "" };
-            try {
-              userDetails = await ApiService.getUserDetails(d.userId);
-            } catch (error) {
-              console.error(`Error fetching user details for doctor ID ${d.id}:`, error);
-            }
-
-            const fullName = `${userDetails.userName}`.trim();
+            const fullName = `${d.name}`;
             let parsedAvailability = [];
             try {
               parsedAvailability = d.availability
@@ -483,7 +477,7 @@ const Doctors = () => {
 
                       <div className="flex items-start">
                         <FaClock className="text-blue-500 mr-2 mt-0.5 flex-shrink-0 text-xs sm:text-sm" />
-                        <span className="text-gray-700 break-words">{doctor.timings}</span>
+                        <span className="text-gray-700 break-words">{formatTimeTo12Hour(doctor.timings)}</span>
                       </div>
 
                       <div className="flex items-start">
@@ -631,7 +625,7 @@ const Doctors = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
         >
-          <NavLink to="/">
+          <NavLink to="/patientDashboard">
             <motion.div
               className="px-4 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center border border-blue-500 text-blue-600"
               whileHover={{

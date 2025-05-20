@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import ApiService from '../../Services/ApiService';
+import { formatTimeTo12Hour } from '../../Utils/TimeFormatter';
 
 
 // Animation variants (unchanged)
@@ -76,6 +77,8 @@ const BookAppointment = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [patientId, setPatientId] = useState(null);
   const [bookedSlots, setBookedSlots] = useState([]);
+  const [pendingSlots, setPendingSlots] = useState([]);
+  const [approvedSlots, setApprovedSlots] = useState([]);
 
   const patientEmail = localStorage.getItem("userEmail");
 
@@ -85,7 +88,7 @@ const BookAppointment = () => {
     specialty: location.state?.doctor.speciality || "Cardiologist",
     experience: location.state?.doctor.experience || "15 Years",
     rating: 4.8,
-    timings: "Monday - Friday: " + location.state?.doctor.timings || "Monday - Friday: 10:00 AM - 4:00 PM",
+    timings: "Monday - Friday: " + formatTimeTo12Hour(location.state?.doctor.timings) || "Monday - Friday: 10:00 AM - 4:00 PM",
     charges: location.state?.doctor.charges + " PKR" || "2000 PKR",
     image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
   };
@@ -108,15 +111,41 @@ const BookAppointment = () => {
   const fetchBookedSlots = async (date) => {
     try {
       const data = await ApiService.getBookedSlots(doctorData.id, date);
-      setBookedSlots(data);
+      
+      // Filter only those which are approved by others
+      const otherApprovedSlots = data
+        .filter(s => s.status === "Approved" && s.patientId !== patientId)
+        .map(s => s.slot);
+  
+      setBookedSlots(otherApprovedSlots);
     } catch (error) {
       console.error("Error fetching booked slots:", error);
     }
   };
+  
+
+  const patientBookedSlots = async (date) => {
+    try {
+      // alert(JSON.stringify(date));
+      // alert(JSON.stringify(patientId));
+      // alert(JSON.stringify(doctorData.id));
+      const data = await ApiService.getPatientBookedSlots(patientId, doctorData.id, date);
+      const patientSlots = data.filter(s => s.status === "Pending").map(s => s.slot);
+      const approvedSlots = data.filter(s => s.status === "Approved").map(s => s.slot);
+      setPendingSlots(patientSlots);
+      setApprovedSlots(approvedSlots);
+    } catch (error) {
+      console.error("Error fetching patient booked slots:", error);
+    }
+  };
+  
+
+  
 
   useEffect(() => {
     if (appointmentDate) {
       fetchBookedSlots(appointmentDate);
+      patientBookedSlots(appointmentDate);
     }
   }, [appointmentDate]);
 
@@ -384,15 +413,27 @@ const BookAppointment = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                           {availableSlots.map((slot, index) => {
                             const isBooked = bookedSlots.includes(slot); // Check if the slot is in the booked slots array
+                            const isPending = pendingSlots.includes(slot);
+                            const isApproved = approvedSlots.includes(slot);
                             //alert(isBooked);
                             return (
                               <div key={index} className="col">
-                                {isBooked ? (
+                                { isPending ? (
+                                  <div className="w-full h-full p-3 rounded-md bg-gradient-to-r from-yellow-400 to-yellow-600 text-white flex flex-col items-center justify-center text-center shadow">
+                                    <FaClock className="mb-1 text-lg" />
+                                    <span>{slot}</span>
+                                  </div>
+                                ) : isApproved ? (
+                                  <div className="w-full h-full p-3 rounded-md bg-gradient-to-r from-green-600 to-green-900 text-white flex flex-col items-center justify-center text-center shadow">
+                                    <FaClock className="mb-1 text-lg" />
+                                    <span>{slot}</span>
+                                  </div>
+                                ):isBooked ? (
                                   <div className="w-full h-full p-3 rounded-md bg-gradient-to-r from-red-600 to-red-900 text-white flex flex-col items-center justify-center text-center shadow">
                                     <FaClock className="mb-1 text-lg" />
                                     <span>{slot}</span>
                                   </div>
-                                ) : (
+                                ) :(
                                   <button
                                     className="w-full h-full p-3 rounded-md bg-gradient-to-r from-purple-500 to-purple-800 text-white flex flex-col items-center justify-center text-center shadow hover:scale-[1.02] transition-all"
                                     onClick={() => {

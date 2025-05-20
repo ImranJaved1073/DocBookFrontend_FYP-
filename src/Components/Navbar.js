@@ -7,6 +7,8 @@ import { colors } from "../Constants/Colors";
 import { navLinks } from "../Constants/navbarNavConfig"; // Import the navigation config
 import { motion } from "framer-motion"; // For animations
 import LogoutModal from "./LogoutModal";
+import { toast } from "react-toastify"; // For notifications
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +18,12 @@ const Navbar = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href = "/";
+    toast.success("Logout successfully!", {
+      position: "top-center"
+    });
+    
+    setIsLogoutModalOpen(false);
+    navigate("/");
   }
 
   return (
@@ -38,13 +45,15 @@ const Navbar = () => {
                 </NavLink>
               </div>
 
-              {/* Desktop Navigation Links */}
-              <div className="hidden lg:flex gap-x-4 ml-6">
-                {navLinks.map((link, index) => (
-                  <NavItem key={index} to={link.to} icon={link.icon} text={link.text} />
-                ))}
+               {/* Desktop Navigation Links */}
+               <div className="hidden lg:flex gap-x-4 ml-6">
+                {navLinks
+                  .filter((link) => !(link.text.toLowerCase() === "dashboard" && !userType))
+                  .map((link, index) => (
+                    <NavItem key={index} to={link.to} icon={link.icon} text={link.text} />
+                  ))}
               </div>
-            </div>
+              </div>
 
             {/* Login Button - Always Visible */}
             {userType ? (

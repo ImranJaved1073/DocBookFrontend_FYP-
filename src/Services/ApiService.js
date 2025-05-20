@@ -25,6 +25,11 @@ class ApiService {
         return response.data;
     }
 
+    static async getDoctorByEmail(email) {
+        const response = await axios.get(`${API_BASE_URL}/Doctor/GetDoctorByEmail/${email}`);
+        return response.data;
+    }
+
     static async getPatientById(patientId) {
         const response = await axios.get(`${API_BASE_URL}/Patient/GetPatientById/${patientId}`);
         return response.data;
@@ -33,6 +38,13 @@ class ApiService {
     static async getBookedSlots(doctorId, appointmentDate) {
         const response = await axios.get(`${API_BASE_URL}/Appointments/GetBookedSlots`, {
             params: { doctorId, appointmentDate },
+        });
+        return response.data;
+    }
+
+    static async getPatientBookedSlots(patientId,doctorId, appointmentDate) {
+        const response = await axios.get(`${API_BASE_URL}/Appointments/GetPatientBookedSlots`, {
+            params: { patientId, doctorId, appointmentDate },
         });
         return response.data;
     }
@@ -111,6 +123,23 @@ class ApiService {
     //get appointments by date and pass todday date
     static async getAppointmentsByDate(email, date) {
         const response = await axios.get(`${API_BASE_URL}/Appointments/byDate/${email}`, { params: { date } });
+        return response.data;
+    }
+
+    static async updateDoctorProfile(doctorId, doctorData) {
+        const response = await axios.put(`${API_BASE_URL}/Doctor/UpdateDoctor/${doctorId}`, doctorData);
+        return response.data;
+    }
+
+    // Update user profile
+    static async updateUserProfile(userId, userData) {
+        const response = await axios.put(`${API_BASE_URL}/Account/updateProfile/${userId}`, userData);
+        return response.data;
+    }
+
+    //reset password
+    static async resetPassword(email, password) {
+        const response = await axios.put(`${API_BASE_URL}/Account/resetPassword`, { email, password });
         return response.data;
     }
 }

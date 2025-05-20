@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { colors } from "../Constants/Colors";
 import { FaUserMd, FaSignOutAlt, FaTimes, FaBars } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { getSidebarNavLinks } from "../Constants/sidebarNavConfig";
 import LogoutModal from "./LogoutModal";
+import { toast } from "react-toastify";
 
 const Sidebar = ({ userType }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   // Handle responsive behavior
   useEffect(() => {
@@ -27,11 +30,19 @@ const Sidebar = ({ userType }) => {
 
   const handleLogout = () => {
     // Remove userRole and jwtToken from localStorage
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('jwtToken');
-    console.log("User logged out");
+    localStorage.clear();
+    
+    toast.success('Logout successfully!', {
+      position: "top-center",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
     setIsLogoutModalOpen(false);
-    window.location.href = '/'; // Redirect to home page after logout
+    navigate("/");
   };
 
   const sidebarNavLinks = getSidebarNavLinks(userType);
@@ -51,7 +62,7 @@ const Sidebar = ({ userType }) => {
 
       {/* Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
           onClick={toggleSidebar}
         />
@@ -81,9 +92,9 @@ const Sidebar = ({ userType }) => {
               <span className="text-xs font-normal">The Medical Assistant</span>
             </div>
           </NavLink>
-          
-          <button 
-            className="lg:hidden text-white" 
+
+          <button
+            className="lg:hidden text-white"
             onClick={toggleSidebar}
             aria-label="Close menu"
           >
@@ -133,8 +144,7 @@ const NavItem = ({ to, icon, text, isLogout, onClick, closeSidebar }) => {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all relative ${
-          isActive ? "font-bold bg-white" : "hover:bg-gray-100"
+        `flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all relative ${isActive ? "font-bold bg-white" : "hover:bg-gray-100"
         }`
       }
       style={({ isActive }) => ({

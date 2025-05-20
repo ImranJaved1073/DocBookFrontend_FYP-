@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { colors } from '../Constants/Colors';
 import ApiService from '../Services/ApiService';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 import { FaUser, FaEnvelope, FaVenusMars, FaUserMd, FaUserAlt, FaCheckCircle, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const SignUpPage = () => {
@@ -55,7 +57,7 @@ const SignUpPage = () => {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match');
+            toast.warn('Passwords do not match');
             return;
         }
 
@@ -70,17 +72,29 @@ const SignUpPage = () => {
 
             await ApiService.register(userData);
 
-            alert('Signup successful');
+            toast.success('Registration successful!');
             navigate('/login');
         } catch (error) {
             if (error.response && error.response.data) {
                 console.error('Detailed error:', error.response.data);
-                alert('Signup failed: ' + (error.response.data.message || JSON.stringify(error.response.data)));
+        
+                // Extract readable error messages
+                const errorData = error.response.data;
+                let message = 'Signup failed.';
+        
+                if (Array.isArray(errorData.errors)) {
+                    message = errorData.errors.map(err => err.description).join(', ');
+                } else if (errorData.message) {
+                    message = errorData.message;
+                }
+        
+                toast.warn(message);
             } else {
                 console.error(error);
-                alert('Signup failed, unknown error occurred.');
+                toast.error('Signup failed, unknown error occurred.');
             }
         }
+        
     };
 
     return (
@@ -233,7 +247,7 @@ const SignUpPage = () => {
                             {/* Password Field */}
                             <div className="relative mb-5">
                                 <div className="relative">
-                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         id="password"
@@ -268,7 +282,7 @@ const SignUpPage = () => {
                             {/* Confirm Password Field */}
                             <div className="relative mb-5">
                                 <div className="relative">
-                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
                                         id="confirmPassword"

@@ -144,14 +144,14 @@ const Dashboard = () => {
           icon={FiUserPlus}
           title="Patients"
           value={getStatValue('newPatients')}
-          onClick={() => navigate(sidebarNavLinks.find(link => link.text === "Patients").to)}
+          onClick={() => navigate('/doctor/patients')}
           color={colors.success}
         />
         <StatCard
           icon={FiFileText}
           title="Prescriptions"
           value={getStatValue('prescriptionsThisMonth')}
-          onClick={() => navigate(sidebarNavLinks.find(link => link.text === "Prescriptions").to)}
+          onClick={() => navigate('/doctor/prescriptions')}
           color={colors.primary}
         />
         <motion.div
@@ -182,13 +182,13 @@ const Dashboard = () => {
             <QuickActionButton
               icon={FiFilePlus}
               text="New Prescription"
-              onClick={() => navigate(sidebarNavLinks.find(link => link.text === "Create Prescription").to)}
+              onClick={() => navigate('/doctor/create_prescription')}
               color={colors.primary}
             />
             <QuickActionButton
               icon={FiUser}
               text="My Profile"
-              onClick={() => navigate(sidebarNavLinks.find(link => link.text === "My Profile").to)}
+              onClick={() => navigate('/doctor/my_profile')}
               color={colors.primary}
             />
           </div>

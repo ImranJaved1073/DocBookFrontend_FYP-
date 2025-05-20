@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { colors } from '../Constants/Colors';
 import ApiService from '../Services/ApiService';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSignInAlt } from 'react-icons/fa';
+import { toast } from 'react-toastify'; // Import toast
+import 'react-toastify/dist/ReactToastify.css'; // Import toast styles
 
 const LoginPage = () => {
     const [focusedFields, setFocusedFields] = useState({
@@ -21,11 +23,11 @@ const LoginPage = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        
+
         const handleResize = () => {
             setIsMobile(window.innerWidth < 768);
         };
-        
+
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -51,30 +53,57 @@ const LoginPage = () => {
         try {
             const { token } = await ApiService.login(formData.email, formData.password);
 
-            // Save the token to localStorage
-            localStorage.setItem('jwtToken', token);
-            localStorage.setItem('userEmail', formData.email);
+            if (token) {
+                // Save the token to localStorage
+                localStorage.setItem('jwtToken', token);
+                localStorage.setItem('userEmail', formData.email);
 
-            alert("Login successful!");
+                toast.success('Login successful!', {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
 
-            // Fetch role request using email
-            const { role } = await ApiService.getUserRole(formData.email);
-            localStorage.setItem('userRole', role);
-            alert(`Role: ${role}`);
+                // Fetch role request using email
+                const { role } = await ApiService.getUserRole(formData.email);
+                localStorage.setItem('userRole', role);
 
-            // Navigate based on the role
-            if (role === 'Doctor') {
-                window.location.href = 'doctorDashboard';
-            } else if (role === 'Patient') {
-                window.location.href = 'patientDashboard';
-            } else if (role === 'admin') {
-                window.location.href = '/admin';
+                // Navigate based on the role
+                // Navigate based on the role
+                if (role === 'Doctor') {
+                    navigate('/doctorDashboard');
+                } else if (role === 'Patient') {
+                    navigate('/patientDashboard');
+                } else if (role === 'admin') {
+                    navigate('/admin');
+                }
+                else {
+                    alert('Unknown role. Please contact support.');
+                }
             } else {
-                alert('Unknown role. Please contact support.');
+                toast.error('Invalid email or password', {
+                    position: "top-right",
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
             }
         } catch (error) {
             console.error('Error during login', error);
-            alert(error.response?.data?.message || 'Login failed. Please try again.');
+            toast.error(error.response?.data?.message || 'Login failed. Please try again.', {
+                position: "top-right",
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         }
     };
 
@@ -96,7 +125,7 @@ const LoginPage = () => {
                         className="md:w-1/2 p-8 md:p-10 bg-white"
                     >
                         <div className="flex justify-center mb-6">
-                            <motion.div 
+                            <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.4 }}
@@ -108,7 +137,7 @@ const LoginPage = () => {
                                 </svg>
                             </motion.div>
                         </div>
-                        
+
                         <h2 className="text-3xl font-bold mb-2 text-center flex items-center justify-center gap-2" style={{ color: colors.primary }}>
                             <FaSignInAlt /> Welcome Back
                         </h2>
@@ -124,22 +153,21 @@ const LoginPage = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     className="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200"
-                                    style={{ 
+                                    style={{
                                         borderColor: focusedFields.email ? colors.primary : '#d1d5db',
-                                        focusRingColor: colors.primary 
+                                        focusRingColor: colors.primary
                                     }}
                                     onFocus={() => handleFocus('email')}
                                     onBlur={() => handleBlur('email')}
                                 />
                                 <label
                                     htmlFor="email"
-                                    className={`absolute left-10 transition-all duration-200 pointer-events-none ${
-                                        focusedFields.email || formData.email
-                                            ? 'top-0 text-xs bg-white px-1 -mt-3'
-                                            : 'top-3.5 text-gray-400'
-                                    }`}
-                                    style={{ 
-                                        color: focusedFields.email || formData.email ? colors.primary : 'inherit' 
+                                    className={`absolute left-10 transition-all duration-200 pointer-events-none ${focusedFields.email || formData.email
+                                        ? 'top-0 text-xs bg-white px-1 -mt-3'
+                                        : 'top-3.5 text-gray-400'
+                                        }`}
+                                    style={{
+                                        color: focusedFields.email || formData.email ? colors.primary : 'inherit'
                                     }}
                                 >
                                     Email
@@ -149,16 +177,16 @@ const LoginPage = () => {
                             {/* Password Field */}
                             <div className="relative mb-6">
                                 <div className="relative">
-                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                     <input
                                         type={showPassword ? "text" : "password"}
                                         id="password"
                                         value={formData.password}
                                         onChange={handleChange}
                                         className="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 pr-10"
-                                        style={{ 
+                                        style={{
                                             borderColor: focusedFields.password ? colors.primary : '#d1d5db',
-                                            focusRingColor: colors.primary 
+                                            focusRingColor: colors.primary
                                         }}
                                         onFocus={() => handleFocus('password')}
                                         onBlur={() => handleBlur('password')}
@@ -173,13 +201,12 @@ const LoginPage = () => {
                                 </div>
                                 <label
                                     htmlFor="password"
-                                    className={`absolute left-10 transition-all duration-200 pointer-events-none ${
-                                        focusedFields.password || formData.password
-                                            ? 'top-0 text-xs bg-white px-1 -mt-3'
-                                            : 'top-3.5 text-gray-400'
-                                    }`}
-                                    style={{ 
-                                        color: focusedFields.password || formData.password ? colors.primary : 'inherit' 
+                                    className={`absolute left-10 transition-all duration-200 pointer-events-none ${focusedFields.password || formData.password
+                                        ? 'top-0 text-xs bg-white px-1 -mt-3'
+                                        : 'top-3.5 text-gray-400'
+                                        }`}
+                                    style={{
+                                        color: focusedFields.password || formData.password ? colors.primary : 'inherit'
                                     }}
                                 >
                                     Password
@@ -193,7 +220,7 @@ const LoginPage = () => {
                                         type="checkbox"
                                         id="remember"
                                         className="h-4 w-4 rounded border-gray-300 focus:ring-2"
-                                        style={{ 
+                                        style={{
                                             focusRingColor: colors.primary,
                                             accentColor: colors.primary
                                         }}
@@ -204,6 +231,7 @@ const LoginPage = () => {
                                 </div>
                                 <button
                                     type="button"
+                                    onClick={() => navigate("/change-password")}
                                     className="text-sm hover:underline"
                                     style={{ color: colors.primary }}
                                 >
@@ -217,8 +245,8 @@ const LoginPage = () => {
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
                                 className="w-full py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 shadow-md flex items-center justify-center gap-2"
-                                style={{ 
-                                    backgroundColor: colors.primary, 
+                                style={{
+                                    backgroundColor: colors.primary,
                                     color: colors.white,
                                     focusRingColor: colors.primary
                                 }}
@@ -289,8 +317,8 @@ const LoginPage = () => {
                             <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full bg-white"></div>
                             <div className="absolute top-1/2 left-1/4 w-16 h-16 rounded-full bg-white"></div>
                         </div>
-                        
-                        <motion.div 
+
+                        <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ delay: 0.6 }}
@@ -307,8 +335,8 @@ const LoginPage = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate("/signup")}
                                 className="py-3 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 shadow-md"
-                                style={{ 
-                                    backgroundColor: colors.white, 
+                                style={{
+                                    backgroundColor: colors.white,
                                     color: colors.primary,
                                     focusRingColor: colors.white
                                 }}
@@ -316,9 +344,9 @@ const LoginPage = () => {
                                 Sign Up
                             </motion.button>
                         </motion.div>
-                        
+
                         {/* Animated Circles */}
-                        <motion.div 
+                        <motion.div
                             animate={{
                                 scale: [1, 1.1, 1],
                                 rotate: [0, 5, 0]
@@ -330,7 +358,7 @@ const LoginPage = () => {
                             }}
                             className="absolute bottom-4 left-4 w-8 h-8 rounded-full border-2 border-white opacity-30"
                         ></motion.div>
-                        <motion.div 
+                        <motion.div
                             animate={{
                                 scale: [1, 1.2, 1],
                                 rotate: [0, -5, 0]
